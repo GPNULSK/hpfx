@@ -1,7 +1,6 @@
 <template>
   <div>
     <el-form :model="formName"  :rules="rules" ref="formName">
-
       <el-row>
         <el-col :span="10">
           <el-form-item label="厂家代码" prop="providerCode" >
@@ -130,7 +129,6 @@ export default {
 
     },
     resetForm(formName) {
-      console.log(formName)
       this.$refs[formName].resetFields();
     },
 
@@ -141,8 +139,6 @@ export default {
       for(let key in this.formName){
         formData.append(key,this.formName[key]);
       }
-
-
       this.$refs[formName].validate((valid) => {
         if (valid) {
           this.axios({
@@ -196,6 +192,7 @@ export default {
   },
 
   mounted() {
+    //获取当前时间
     let _this = this;
     let yy = new Date().getFullYear();
     let mm = new Date().getMonth()+1;

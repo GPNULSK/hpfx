@@ -16,7 +16,7 @@
           <el-input size="mini" v-model="batchCode" style="float: left;width: 8vw;margin-top: 15px"></el-input>
 
           <el-button size="mini" type="primary" style="margin-top: 15px;float: right;margin-right: 50px" @click="search">查询</el-button>
-          <el-button size="mini" type="primary" style="margin-top: 15px;float: right;margin-right: 10px">显示全部</el-button>
+          <el-button size="mini" type="primary" style="margin-top: 15px;float: right;margin-right: 10px" @click="showAll">显示全部</el-button>
         </div>
       </el-header>
       <el-main>
@@ -26,7 +26,8 @@
             <el-button type="mini" @click="openForm(true)" style="margin-left: 10px">录入</el-button>
             <el-button type="mini">编辑负责人</el-button>
             <el-button type="mini">查看</el-button>
-            <el-button type="mini">导出</el-button>
+            <el-button type="mini" @click="export2Excel">导出</el-button>
+            <a href="http://localhost:8081/exportToExcel"><el-button size="mini">导出</el-button></a>
             <el-upload
               class="upload-demo"
               ref="upload"
@@ -45,19 +46,18 @@
           <el-table
             :data="tableData"
             border
+            id="out-table"
             :header-cell-style="{'text-align':'center'}"
             :cell-style="{'text-align':'center'}"
             style="width: 100%"
             height="75vh"
+            @select="selectRow"
             @selection-change="handleSelectionChange">
-
             <el-table-column
               type="selection"
               width="55">
             </el-table-column>
-
             <el-table-column prop="id" v-if="false">
-
             </el-table-column>
             <el-table-column
               prop="providerCode"
@@ -95,10 +95,7 @@
               prop="operator"
               label="接收人">
             </el-table-column>
-<!--            <el-table-column-->
-<!--              prop="isReturn"-->
-<!--              label="是否退货">-->
-<!--            </el-table-column>-->
+
             <el-table-column label="是否退货"  >
               <template slot-scope="scope">
                 <el-switch
@@ -143,11 +140,9 @@
             @current-change="handleCurrentChange"
             :current-page="currentPage4"
             :page-sizes="[10, 15, 20, 30]"
-            :page-size="100"
             layout="total, sizes, prev, pager, next, jumper"
-            :total="400">
+            :total="totalAccount">
           </el-pagination>
-
         </div>
       </el-footer>
     </el-container>
@@ -173,34 +168,50 @@ export default {
       materialCode:'',
       materialGrade:'',
       batchCode:'',
-      value1:true
+      value1:true,
+      totalAccount:0,
+      pageSize:10,
+      curPage:1
+
     }
   },
   methods: {
+/*------------------表格点击的方法-------------------*/
     //删除按钮触发的方法
     handleDelete(index,row){
       this.$confirm('是否永久删除此数据','提示',{
         confirmButtonText:'确定',
         cancelButtonText:'取消'
       }).then(()=>{
-        this.$message.success('删除成功')
+        this.axios('http://localhost:8081/delete',{
+          params:{
+            id:row.id
+          }
+        }).then(res=>{
+          if (res.data == 'success'){
+            this.$message.success('删除成功')
+            this.loadTableDate();
+          }else {
+            this.$message.error('删除失败')
+          }
+        })
       }).catch(()=>{
         this.$message.success('已取消删除')
       })
     },
-    handleSelectionChange(val){
-      console.log(val)
-    },
-    handleSizeChange(val) {
-      console.log(`每页 ${val} 条`);
-    },
-    handleCurrentChange(val) {
-      console.log(`当前页: ${val}`);
-    },
-    ...mapActions(
-      ['openForm','flushTable','noFlush'] // 相当于this.$store.dispatch('modifyName'),提交这个方法
-    ),
 
+    //当选择项发生变化时会触发该事件
+    handleSelectionChange(val){
+      //当选择项发生变化时会触发该事件
+    },
+    //当用户手动勾选数据行的 Checkbox 时触发的事件
+    selectRow(row){
+
+    },
+/*------------------el-table相关方法结束-----------------------------*/
+
+
+ /*----------------功能按钮方法----------------*/
     //搜索
     search(){
       this.axios('http://localhost:8081/search',{
@@ -215,14 +226,53 @@ export default {
       })
     },
 
+    //更改退货状态
+    changeRe(index,row){
+      this.axios('http://localhost:8081/changeStatus',{
+        params:{
+          id:row.id,
+          testReturn:row.testReturn
+        }
+      }).then(res=>{
+        if (res.data== 'success'){
+          this.$message.success('退货状态修改成功')
+        }
+        this.loadTableDate()
+      }).catch(res=>{
+        console.log(row.testReturn)
+        this.$message.error('状态修改失败')
+        if (row.testReturn == false){
+          row.testReturn = true;
+        }else if (row.testReturn == true){
+          row.testReturn = false;
+        }
+      })
+    },
+
+/*------------------功能按钮方法结束----------------------*/
+
+/*------------分页相关的方法-----------------------*/
+    //更改每页的大小
+    handleSizeChange(val) {
+      this.pageSize = val;
+      this.loadTableDate()
+    },
+
+    //更改当前页方法
+    handleCurrentChange(val) {
+      this.curPage = val;
+      this.loadTableDate()
+    },
+/*--------分页相关操作结束----------------*/
+
+
+/*------文件上传相关方法-----------*/
+    //文件上传成功的回调函数
     uploadSuccess(response, file, fileList) {
       if (response) {
-        console.log(response)
-        console.log(file)
         alert("文件导入成功");
+        this.loadTableDate()
       } else {
-        console.log(response)
-        console.log(file)
         alert("文件导入失败");
       }
     },
@@ -237,7 +287,6 @@ export default {
       if (!extension && !extension2 ) {
         alert("上传模板只能是 xls、xlsx 格式!");
       }
-
       return extension || extension2;
     },
 
@@ -251,36 +300,53 @@ export default {
         alert("此文件导入失败");
       }
     },
+/*----------文件上传操作方法结束---------------*/
 
-    changeRe(index,row){
 
-      this.axios('http://localhost:8081/changeStatus',{
-        params:{
-          id:row.id,
-          testReturn:row.testReturn
-        }
-      }).then(res=>{
-        if (res.data== 'success'){
-          this.$message.success('退货状态修改成功')
-        }
-        this.loadTableDate()
-      })
-    },
-
+/*-------------公共加载页面数据条数，根据当前分页设定----------*/
     loadTableDate(){
       this.axios({
-        url:'http://localhost:8081/findAll'
+        url:'http://localhost:8081/findAll',
+        params: {
+          curPage:this.curPage,
+          pageSize:this.pageSize
+        }
       }).then(res=>{
-       if (res.data == 'success'){
-         this.$message.success('退货状态修改成功')
-       }
         this.tableData = res.data
-
       })
-    }
+      this.axios('http://localhost:8081/totalAccount').then(res=>{
+        this.totalAccount = res.data
+      })
+    },
+/*--------------公共函数结束------------------------*/
+    //   点击按钮  导出excel表格：
+    export2Excel: function () {
+      let tables = document.getElementById("out-table");
+      let table_book = this.$XLSX.utils.table_to_book(tables);
+      var table_write = this.$XLSX.write(table_book, {
+        bookType: "xlsx",
+        bookSST: true,
+        type: "array"
+      });
+      try {
+        this.$FileSaver.saveAs(
+          new Blob([table_write], {type: "application/octet-stream"}),
+          "sheetjs.xlsx"
+        );
+      } catch (e) {
+        if (typeof console !== "undefined") console.log(e, table_write);
+      }
+      return table_write;
+    },
+    showAll(){
 
+    }
   },
 
+/*-------------vuex相关操作--------------------*/
+  ...mapActions(
+    ['openForm','flushTable','noFlush'] // 相当于this.$store.dispatch('modifyName'),提交这个方法
+  ),
 
   computed: {
     ...mapGetters(['flag']),// 动态计算属性，相当于this.$store.getters.resturantNam
@@ -290,13 +356,19 @@ export default {
       return this.$store.getters.isFlush
     }
   },
+/*-------------vuex相关操作结束----------------------*/
+
+  /*-------监听receiveForm页面的提交按钮，提交成功之后刷新---------*/
   watch:{
     isFlush(val){
       if (val){
         this.axios({
-          url:'http://localhost:8081/findAll'
+          url:'http://localhost:8081/findAll',
+          params:{
+            curPage:this.curPage,
+            pageSize:this.pageSize
+          }
         }).then(res=>{
-
           this.tableData = res.data
           let e = document.createEvent('MouseEvent');
           e.initEvent('click', false, false);
@@ -305,12 +377,23 @@ export default {
       }
     }
   },
+/*------------页面加载完成时获取表格数据和分页数据------------------*/
   created() {
+    //获取table数据
     this.axios({
-      url:'http://localhost:8081/findAll'
+      url:'http://localhost:8081/findAll',
+      params: {
+        curPage:this.curPage,
+        pageSize:this.pageSize
+      }
     }).then(res=>{
       this.tableData = res.data
+    }).catch(res=>{
+      this.$message.error('加载数据失败')
+    });
 
+    this.axios('http://localhost:8081/totalAccount').then(res=>{
+      this.totalAccount = res.data
     })
   }
 }

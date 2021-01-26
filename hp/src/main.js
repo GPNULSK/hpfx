@@ -11,8 +11,12 @@ import 'element-ui/lib/theme-chalk/index.css'
 // import './assets/css/reset.css'
 import VueWechatTitle from 'vue-wechat-title';
 import store from "./store";
+// vue中导出excel表格模板
+import FileSaver from 'file-saver'
 import XLSX from 'xlsx'
 
+Vue.prototype.$FileSaver = FileSaver; //设置全局
+Vue.prototype.$XLSX = XLSX; //设置全局
 
 Vue.use(VueWechatTitle)
 Vue.use(VueAxios,Axios);
