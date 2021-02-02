@@ -1,19 +1,45 @@
 <template>
-  <div>
-    <el-upload
-      class="upload-demo"
-      ref="upload"
-      action="http://localhost:8081/uploadExcel"
-      name="excelFile"
-      :on-preview="handlePreview"
-      :on-remove="handleRemove"
-      :on-error="uploadFalse"
-      :on-success="uploadSuccess"
-      :auto-upload="true"
-      :before-upload="beforeAvatarUpload">
-      <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
-    </el-upload>
-  </div>
+  <el-header style="padding: 0">
+    <div style="width: 100%;height: 100%;background-color: #92b7c2;">
+
+      <div>
+        <span style="padding-top: 18px;float: left;margin-left: 15px">厂家代码：</span>
+        <el-input size="mini" v-model="providerCode"  style="float: left;width: 8vw;margin-top: 15px"></el-input>
+
+        <span style="padding-top: 18px;float: left;margin-left: 10px">物料编码：</span>
+        <el-input size="mini" v-model="materialCode" style="float: left;width: 8vw;margin-top: 15px"></el-input>
+
+        <span style="padding-top: 18px;float: left;margin-left: 10px">来料档次：</span>
+        <el-input size="mini" v-model="materialGrade" style="float: left;width: 8vw;margin-top: 15px"></el-input>
+
+        <span style="padding-top: 18px;float: left;margin-left: 10px">批次号：</span>
+        <el-input size="mini" v-model="batchCode" style="float: left;width: 8vw;margin-top: 15px"></el-input>
+      </div>
+
+      <div>
+        <el-date-picker
+          size="mini"
+          v-model="startDate"
+          type="date"
+          placeholder="开始日期" style="width: 8vw;margin-left: 1vw;margin-top: 15px">
+        </el-date-picker>
+
+        <el-date-picker
+          size="mini"
+          v-model="endDate"
+          type="date"
+          placeholder="截止日期" style="width: 8vw;margin-left: 1vw;margin-top: 15px">
+        </el-date-picker>
+
+        <el-button size="mini" type="primary" style="margin-top: 15px;float: right;margin-right: 50px" @click="search">查询</el-button>
+        <el-button size="mini" type="primary" style="margin-top: 15px;float: right;margin-right: 10px" @click="showAll">显示全部</el-button>
+      </div>
+
+    </div>
+    <div>
+
+    </div>
+  </el-header>
 </template>
 
 <script>

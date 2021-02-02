@@ -5,7 +5,7 @@ import myTable from '../components/MyTable'
 import ready from '../components/Ready'
 import index from '../components/Index'
 import test from '../components/Test'
-
+import returnOrder from '../components/ReturnOrder'
 
 
 Vue.use(Router)
@@ -34,6 +34,10 @@ export default new Router({
       component: test,
       meta: {title:'测试'}
     },
+    {
+      path:'/returnOrder',
+      component: returnOrder
+    }
 
 
   ]

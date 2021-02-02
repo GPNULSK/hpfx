@@ -29,7 +29,6 @@
         </el-col>
       </el-row>
 
-
       <el-row>
         <el-col :span="10">
           <el-form-item label="物料名称" prop="materialName">
@@ -50,7 +49,7 @@
           </el-form-item>
         </el-col>
         <el-col :span="12">
-          <el-form-item label="接收时间" prop="">
+          <el-form-item label="接收时间" prop="arrivalDate">
             <el-input size="mini" style="width: 10vw" v-model="formName.arrivalDate"></el-input>
           </el-form-item>
         </el-col>
@@ -60,6 +59,11 @@
         <el-col :span="10">
           <el-form-item label="接收人" prop="operator" style="letter-spacing: 0.3em;padding-right: -0.25em">
             <el-input  size="mini" style="width: 10vw" v-model="formName.operator"></el-input>
+          </el-form-item>
+        </el-col>
+        <el-col :span="10">
+          <el-form-item label="接收数量" prop="operator" style="letter-spacing: 0.3em;padding-right: -0.25em">
+            <el-input onkeyup="this.value=this.value.replace(/[^\d.]/g,'');" size="mini" style="width: 10vw" v-model="formName.account"></el-input>
           </el-form-item>
         </el-col>
       </el-row>
@@ -72,8 +76,6 @@
       </el-form-item>
     </el-form>
 
-
-    <el-button  @click="flushTable(true)" ref="flushT"></el-button>
   </div>
 </template>
 
@@ -88,15 +90,16 @@ export default {
   data(){
     return{
       formName:{
-        providerCode:'0',
-        providerName:'0',
-        batchCode:'0',
-        materialCode:'0',
-        materialName:'0',
-        materialGrade:'0',
-        status:'0',
-        arrivalDate:'0',
-        operator:'0',
+        providerCode:'',
+        providerName:'',
+        batchCode:'',
+        materialCode:'',
+        materialName:'',
+        materialGrade:'',
+        status:'',
+        arrivalDate:'',
+        operator:'',
+        account:0,
       },
       rules:{
         providerCode: [{ required: true, message: '请输入客户代码', trigger: 'blur' },],
@@ -117,17 +120,6 @@ export default {
     ),
 
 
-    submitForm1(formName){
-      this.$refs[formName].validate((valid) => {
-        if (valid) {
-          alert('submit!');
-        } else {
-          console.log('error submit!!');
-          return false;
-        }
-      });
-
-    },
     resetForm(formName) {
       this.$refs[formName].resetFields();
     },
@@ -149,8 +141,7 @@ export default {
             //   "Content-Type": "application/json"
             // },
             // withCredentials:true,
-            data:formData
-
+            data:formData,
           }).then(res=>{
             console.log(res.data)
             if(res.data == 'SUCCESS'){
@@ -163,9 +154,10 @@ export default {
                 type:'success'
               })
 
-              //let e1 = document.createEvent('MouseEvent');
-              e.initEvent('click', false, false);
-              this.$refs.flushT.$el.dispatchEvent(e);
+              this.$store.commit('flushTable',true)
+              // let e1 = document.createEvent('MouseEvent');
+              // e1.initEvent('click', false, false);
+              // this.$refs.flushT.$el.dispatchEvent(e1);
             }
           })
 
@@ -174,7 +166,10 @@ export default {
           // this.$refs.close.$el.dispatchEvent(e);
 
         } else {
-          console.log('error submit!!');
+          this.$notify.error({
+            title: '请注意',
+            message: '录入失败'
+          });
           return false;
         }
       });

@@ -17,6 +17,10 @@ import XLSX from 'xlsx'
 
 Vue.prototype.$FileSaver = FileSaver; //设置全局
 Vue.prototype.$XLSX = XLSX; //设置全局
+import moment from "moment";
+
+
+Vue.prototype.$moment = moment
 
 Vue.use(VueWechatTitle)
 Vue.use(VueAxios,Axios);

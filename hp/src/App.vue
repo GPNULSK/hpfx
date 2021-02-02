@@ -17,12 +17,12 @@
 
               <p class="uname">用户名</p>
               <img class="user_icon" src="./assets/images/userIcon.png">
-
             </el-menu>
 
           </div>
         </el-header>
         <!--      header导航栏end-->
+
         <el-container>
           <!--        aside显示侧边栏-->
           <el-aside width="14vw">
@@ -90,12 +90,14 @@
           <!--        main区域-->
           <el-main style="height: 100vh;padding: 0;margin: 0">
             <!--    引入MyTable 页面      -->
-           <router-view v-wechat-title="$route.meta.title"></router-view>
+            <router-view v-wechat-title="$route.meta.title"></router-view>
           </el-main>
         </el-container>
       </el-container>
-
     </template>
+
+
+
   </div>
 </template>
 
@@ -142,11 +144,11 @@ export default {
 
 <style>
 
-  /*font-family: 'Avenir', Helvetica, Arial, sans-serif;*/
-  /*-webkit-font-smoothing: antialiased;*/
-  /*-moz-osx-font-smoothing: grayscale;*/
-  /*text-align: center;*/
-  /*color: #2c3e50;*/
+/*font-family: 'Avenir', Helvetica, Arial, sans-serif;*/
+/*-webkit-font-smoothing: antialiased;*/
+/*-moz-osx-font-smoothing: grayscale;*/
+/*text-align: center;*/
+/*color: #2c3e50;*/
 
 html,
 body,
@@ -158,56 +160,56 @@ body,
 }
 
 
-  ody > .el-container {
-    margin-bottom: 40px;
-  }
+/*body > .el-container {*/
+/*  margin-bottom: 40px;*/
+/*}*/
 
-  .user_icon{
-    float: right;
-    width: 30px;
-    margin-top: 14px;
-    margin-right: 2px;
-    cursor: pointer;
-  }
-  .uname{
-    float: right;
-    margin-right: 20px;
-    cursor: pointer;
-    color: rgb(244, 245, 215);
-    text-align: center;
-  }
+.user_icon{
+  float: right;
+  width: 30px;
+  margin-top: 14px;
+  margin-right: 2px;
+  cursor: pointer;
+}
+.uname{
+  float: right;
+  margin-right: 20px;
+  cursor: pointer;
+  color: rgb(244, 245, 215);
+  text-align: center;
+}
 
 
 
-  .el-container {
-    padding: 0;
-  }
+/*.el-container {*/
+/*  padding: 0;*/
+/*}*/
 
-  header.el-header {
-    margin-top: -10px;
-    padding: 0;
-  }
+/*header.el-header {*/
+/*  margin-top: -10px;*/
+/*  padding: 0;*/
+/*}*/
 
-  header.el-aside {
-    padding: 0;
-    height: 100vh;
-  }
+/*header.el-aside {*/
+/*  padding: 0;*/
+/*  height: 100vh;*/
+/*}*/
 
-  /*main.el-main {*/
-  /*  height: 100vh;*/
-  /*  padding: 0;*/
-  /*}*/
+/*main.el-main {*/
+/*  height: 100vh;*/
+/*  padding: 0;*/
+/*}*/
 
-  .el-aside {
-    background-color: rgb(84, 92, 100);
-    height:100vh;
-  }
+.el-aside {
+  background-color: rgb(84, 92, 100);
+  height:100vh;
+}
 
-  .el-header {
-    background-color: rgb(84, 92, 100);
-  }
-  .el-menu.el-menu--horizontal{
-    height: 100%;
-  }
+.el-header {
+  background-color: rgb(84, 92, 100);
+}
+.el-menu.el-menu--horizontal{
+  height: 100%;
+}
 
 </style>
