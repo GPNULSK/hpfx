@@ -54,7 +54,8 @@
           <div style="padding-bottom: 10px">
             <el-button type="mini" @click="openForm(true)" style="margin-left: 10px">录入</el-button>
             <el-button type="mini">编辑负责人</el-button>
-            <el-button type="mini" @click="toReturn">查看</el-button>
+            <el-button type="mini" @click="toReturn">退单</el-button>
+            <el-button type="mini" @click="findRecords">查看</el-button>
             <el-button type="mini" @click="export2Excel">导出</el-button>
             <a href="http://localhost:8081/downloadExcel"><el-button size="mini">下载模板</el-button></a>
             <el-upload
@@ -97,6 +98,8 @@
             </el-table-column>
             <el-table-column prop="id" v-if="false">
             </el-table-column>
+            <el-table-column prop="orderId" v-if="false">
+            </el-table-column>
             <el-table-column
               prop="providerCode"
               label="厂家代码">
@@ -134,20 +137,13 @@
               label="接收人">
             </el-table-column>
 
-<!--            <el-table-column label="是否退货"  >-->
-<!--              <template slot-scope="scope">-->
-<!--                <el-switch-->
-<!--                  v-model="scope.row.testReturn"-->
-<!--                  active-text="是"-->
-<!--                  @change="changeRe(scope.$index,scope.row)"-->
-<!--                  inactive-text="否">-->
-<!--                </el-switch>-->
-<!--              </template>-->
-
-<!--            </el-table-column>-->
+            <el-table-column
+              prop="inventory"
+              label="库存数量">
+            </el-table-column>
             <el-table-column
               prop="account"
-              label="库存数量">
+              label="库存数量" v-if="false">
             </el-table-column>
 
             <el-table-column
@@ -181,7 +177,7 @@
 
 <!--        退单的隐藏表单-->
         <div>
-          <el-dialog title="退单" width="40%" :close-on-click-modal="false" :show-close="false" top="10%" :visible.sync="returnForm">
+          <el-dialog title="退单" width="40%" :close-on-click-modal="false" :show-close="false" top="10%" :visible.sync="returnForm" @close="closeReturnForm">
             <el-form :model="formName"  ref="formName" style="margin-left: 70px">
               <el-row>
                 <el-col :span="10">
@@ -197,7 +193,6 @@
                 </el-col>
               </el-row>
 
-
               <el-row>
                 <el-col :span="10">
                   <el-form-item label="批次号" prop="batchCode" style="letter-spacing: 0.3em;">
@@ -210,7 +205,6 @@
                   </el-form-item>
                 </el-col>
               </el-row>
-
               <el-row>
                 <el-col :span="10">
                   <el-form-item label="物料名称" prop="materialName">
@@ -250,7 +244,7 @@
                 </el-col>
               </el-row>
 
-              <el-row style="padding-bottom: 1vh">
+              <el-row>
                 <el-col :span="10">
                   <el-form-item label="累计退单" prop="returnAcc">
                     <el-input disabled size="mini" style="width: 10vw" v-model="formName.totalReturn" ></el-input>
@@ -258,9 +252,17 @@
                 </el-col>
                 <el-col :span="10">
                   <el-form-item label="退单数量" prop="returnAcc">
-                    <el-input   size="mini" style="width: 10vw" v-model="returnAccount" ></el-input>
+                    <el-input   size="mini" style="width: 10vw" v-model="formName.returnAccount" ></el-input>
                   </el-form-item>
                 </el-col>
+              </el-row>
+              <el-row style="padding-bottom: 1vh">
+                <el-col :span="20">
+                  <el-form-item label="备注" prop="remark">
+                    <el-input  size="mini" type="textarea" :row="2" style="width: 15vw" v-model="formName.remark" ></el-input>
+                  </el-form-item>
+                </el-col>
+
               </el-row>
 
               <el-form-item>
@@ -271,7 +273,105 @@
             </el-form>
           </el-dialog>
         </div>
+<!--  隐藏的查看对话框  -->
+        <div>
+          <el-dialog title="退单" width="40%" :close-on-click-modal="true" :show-close="true" top="10%" :visible.sync="checkForm">
+            <el-form :model="formName"  ref="formName" style="margin-left: 70px">
+              <el-row>
+                <el-col :span="10">
+                  <el-form-item label="厂家代码" prop="providerCode" >
+                    <el-input disabled size="mini" style="width: 10vw" v-model="checkFormValues.providerCode"></el-input>
+                  </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                  <el-form-item label="厂家名称" prop="providerName">
+                    <el-input disabled size="mini" style="width: 10vw" v-model="checkFormValues.providerName"></el-input>
+                  </el-form-item>
+                </el-col>
+              </el-row>
+              <el-row>
+                <el-col :span="10">
+                  <el-form-item label="批次号" prop="batchCode" style="letter-spacing: 0.3em;">
+                    <el-input disabled size="mini" style="width: 10vw" v-model="checkFormValues.batchCode"></el-input>
+                  </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                  <el-form-item label="物料编码" prop="materialCode">
+                    <el-input disabled size="mini" style="width: 10vw" v-model="checkFormValues.materialCode"></el-input>
+                  </el-form-item>
+                </el-col>
+              </el-row>
+              <el-row>
+                <el-col :span="10">
+                  <el-form-item label="物料名称" prop="materialName">
+                    <el-input disabled size="mini" style="width: 10vw" v-model="checkFormValues.materialName"></el-input>
+                  </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                  <el-form-item label="来料档次" prop="materialGrade">
+                    <el-input disabled size="mini" style="width: 10vw" v-model="checkFormValues.materialGrade"></el-input>
+                  </el-form-item>
+                </el-col>
+              </el-row>
+              <el-row>
+                <el-col :span="10">
+                  <el-form-item label="物料状态" prop="status">
+                    <el-input disabled size="mini" style="width: 10vw" v-model="checkFormValues.status"></el-input>
+                  </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                  <el-form-item label="接收时间" prop="arrivalDate">
+                    <el-input disabled size="mini" style="width: 10vw" v-model="checkFormValues.arrivalDate"></el-input>
+                  </el-form-item>
+                </el-col>
+              </el-row>
 
+              <el-row style="padding-bottom: 1vh">
+                <el-col :span="10">
+                  <el-form-item label="接收人" prop="operator" style="letter-spacing: 0.3em;padding-right: -0.25em">
+                    <el-input disabled size="mini" style="width: 10vw" v-model="checkFormValues.operator"></el-input>
+                  </el-form-item>
+                </el-col>
+                <el-col :span="10">
+                  <el-form-item label="接收数量" prop="operator">
+                    <el-input disabled  size="mini" style="width: 10vw" v-model="checkFormValues.account"></el-input>
+                  </el-form-item>
+                </el-col>
+              </el-row>
+              <el-row style="padding-bottom: 1vh">
+                <el-col :span="10">
+                  <el-form-item label="累计退单" prop="returnAcc">
+                    <el-input disabled size="mini" style="width: 10vw" v-model="checkFormValues.totalReturn" ></el-input>
+                  </el-form-item>
+                </el-col>
+              </el-row>
+            </el-form>
+
+            <template>
+              <el-table
+                :data="recordValue"
+                border
+                style="width: 100%">
+                <el-table-column
+                  prop="providerCode"
+                  label="厂家代码">
+                </el-table-column>
+                <el-table-column
+                  prop="materialCode"
+                  label="物料代码">
+                </el-table-column>
+                <el-table-column
+                  prop="operation"
+                  label="操作">
+                </el-table-column>
+                <el-table-column
+                  prop="remark"
+                  label="备注">
+                </el-table-column>
+              </el-table>
+            </template>
+          </el-dialog>
+        </div>
       </el-main>
       <el-footer>
         <el-pagination
@@ -316,9 +416,12 @@ export default {
       endDate:'',
       searching:false,  //根据这个标志来控制下一页加载的是查询的结果还是不查询的结果
       returnForm:false, //控制退货视窗显示
-      returnAccount:0,  //退货数量
+      returnAccount:'',  //退货数量
       returnId:'',      //需要退单的id
       curRow:[],        //表格中被选中的行
+      checkForm:false, //点击查看显示的视窗
+      recordValue:[], //展示操作记录的table
+      uuid:'',        //唯一UUID
       formName:{
         providerCode:'',
         providerName:'',
@@ -329,14 +432,30 @@ export default {
         status:'',
         arrivalDate:'',
         operator:'',
-        account:0,
-        totalReturn:0
-      },  //表单值
+        account:'',
+        totalReturn:'',
+        remark:'',
+        returnAccount:''
+      },  //查看的视窗表单
+      checkFormValues:{
+        providerCode:'',
+        providerName:'',
+        batchCode:'',
+        materialCode:'',
+        materialName:'',
+        materialGrade:'',
+        status:'',
+        arrivalDate:'',
+        operator:'',
+        account:'',
+        totalReturn:'',
+
+      },
 
     }
   },
   methods: {
-/*------------------表格点击的方法-------------------*/
+/*------------------1.表格点击的方法-------------------*/
     //删除按钮触发的方法
     handleDelete(index,row){
       this.$confirm('是否永久删除此数据','提示',{
@@ -367,16 +486,20 @@ export default {
     //当用户手动勾选数据行的 Checkbox 时触发的事件
     selectRow(row){
       if (row != '' && row !=null){
-        this.curRow = row[0]
-        this.returnId = row[0].id
+        this.curRow = row[0];
+        if (row[0].returnAccount === null){
+          this.curRow.returnAccount = 0;
+        }
+        this.returnId = row[0].id;
+        this.uuid = row[0].orderId;
       }
 
 
     },
-/*------------------el-table相关方法结束-----------------------------*/
+/*------------------1.el-table相关方法结束-----------------------------*/
 
 
- /*----------------功能按钮方法----------------*/
+ /*----------------2.功能按钮方法----------------*/
     //搜索
     search(){
       let date1=this.$moment(this.startDate).utcOffset(480).format("YYYY-MM-DD")
@@ -432,19 +555,23 @@ export default {
       this.formName.totalReturn=this.curRow.returnAccount;
     },
 
-    submitReturnForm(){
-
-      console.log(this.curRow.account)
+    submitReturnForm(){ //提交退单方法
       if (this.returnAccount>(this.curRow.account-this.curRow.returnAccount)){
         this.$message.error('退货数量超过可退货数量')
         return;
       }
+      console.log(this.returnId)
       this.axios({
         method:'POST',
         url:'http://localhost:8081/returnOrder',
         params:{
+          username:sessionStorage.getItem('username'),
           id:this.returnId,
-          account:this.returnAccount
+          account:this.formName.returnAccount,
+          uuid:this.uuid,
+          providerCode:this.formName.providerCode,
+          materialCode:this.formName.materialCode,
+          remark:this.formName.remark
         }
       }).then(res=>{
         if (res.data === 'success'){
@@ -453,6 +580,8 @@ export default {
           this.loadTableDate()
         }else if (res.data === 'fail'){
           this.$message.error('退单失败')
+        }else if (res.data === 'error'){
+          alert("请填写退货数量后再提交")
         }
       }).catch(res=>{
         console.log(res)
@@ -460,8 +589,36 @@ export default {
       })
     },
 
+    findRecords(){
+      this.checkForm = true;
+      this.checkFormValues.providerCode=this.curRow.providerCode;
+      this.checkFormValues.providerName=this.curRow.providerName;
+      this.checkFormValues.batchCode=this.curRow.batchCode;
+      this.checkFormValues.materialCode=this.curRow.materialCode;
+      this.checkFormValues.materialName=this.curRow.materialName;
+      this.checkFormValues.status=this.curRow.status;
+      this.checkFormValues.arrivalDate=this.curRow.arrivalDate;
+      this.checkFormValues.operator=this.curRow.operator;
+      this.checkFormValues.account=this.curRow.account;
+      this.checkFormValues.materialGrade=this.curRow.materialGrade;
+      this.checkFormValues.totalReturn=this.curRow.returnAccount;
+      this.axios({
+        url:'http://localhost:8081/record/findListRecord',
+        params:{
+          uuid:this.uuid
+        }
+      }).then(res=>{
+        let data = res.data;
+        this.recordValue = data;
+      });
+    },
 
-/*------------------功能按钮方法结束----------------------*/
+    closeReturnForm(){
+      this.formName.returnAccount = '';
+    },
+
+
+/*------------------2.功能按钮方法结束----------------------*/
 
 /*------------分页相关的方法-----------------------*/
     //更改每页的大小
@@ -564,7 +721,7 @@ export default {
 
     /*-------------vuex方法-----------------*/
     ...mapActions(
-      ['openForm','flushTable','noFlush'] // 相当于this.$store.dispatch('modifyName'),提交这个方法
+      ['openForm','flushTable','noFlush','setUser'] // 相当于this.$store.dispatch('modifyName'),提交这个方法
     ),
   },
 
@@ -577,7 +734,13 @@ export default {
     //...mapGetters(['isFlush']),
     isFlush:function (){
       this.flushFlag = this.$store.getters.isFlush
+      //console.log(this.$store.getters.isFlush)
       return this.$store.getters.isFlush
+    },
+
+    loginUsername:function (){
+      console.log(this.$store.getters.loginUsername)
+      return this.$store.getters.loginUsername
     }
   },
 /*-------------vuex相关操作结束----------------------*/
@@ -611,8 +774,8 @@ export default {
         value = value.replace('.', '$#$').replace(/\./g, '').replace('$#$', '.')
         value = value.replace(/^(-)*(\d+)\.(\d\d).*$/, '$1$2.$3') // 只能输入两个小数
         this.returnAccount=value;
-      }
-    }
+      };
+    },
 
   },
 /*------------页面加载完成时获取表格数据和分页数据------------------*/

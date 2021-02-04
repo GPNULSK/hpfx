@@ -14,5 +14,15 @@ export function noFlush({commit}, name) {
   return commit ('noFlush', name)
 }
 
+
+export function setUser({commit}, name) {
+  return commit ('setUser', name)
+}
+
+
+
+
+
+
 // ES6精简写法
 // export const modifyAName = ({commit},name) => commit('modifyAName', name)

@@ -15,7 +15,6 @@
         </el-col>
       </el-row>
 
-
       <el-row>
         <el-col :span="10">
           <el-form-item label="批次号" prop="batchCode" style="letter-spacing: 0.3em;">
@@ -50,7 +49,7 @@
         </el-col>
         <el-col :span="12">
           <el-form-item label="接收时间" prop="arrivalDate">
-            <el-input size="mini" style="width: 10vw" v-model="formName.arrivalDate"></el-input>
+            <el-input disabled size="mini" style="width: 10vw" v-model="formName.arrivalDate"></el-input>
           </el-form-item>
         </el-col>
       </el-row>
@@ -58,11 +57,11 @@
       <el-row style="padding-bottom: 1vh">
         <el-col :span="10">
           <el-form-item label="接收人" prop="operator" style="letter-spacing: 0.3em;padding-right: -0.25em">
-            <el-input  size="mini" style="width: 10vw" v-model="formName.operator"></el-input>
+            <el-input disabled size="mini" style="width: 10vw" v-model="formName.operator"></el-input>
           </el-form-item>
         </el-col>
         <el-col :span="10">
-          <el-form-item label="接收数量" prop="operator" style="letter-spacing: 0.3em;padding-right: -0.25em">
+          <el-form-item label="接收数量" prop="operator" style="">
             <el-input onkeyup="this.value=this.value.replace(/[^\d.]/g,'');" size="mini" style="width: 10vw" v-model="formName.account"></el-input>
           </el-form-item>
         </el-col>
@@ -99,7 +98,9 @@ export default {
         status:'',
         arrivalDate:'',
         operator:'',
-        account:0,
+        account:'',
+        username:'',
+        employeeId1:'',
       },
       rules:{
         providerCode: [{ required: true, message: '请输入客户代码', trigger: 'blur' },],
@@ -154,10 +155,21 @@ export default {
                 type:'success'
               })
 
+              this.formName.materialGrade = null;
+              this.formName.account = null;
+              this.formName.materialName = null;
+              this.formName.materialCode = null;
+              this.formName.providerName = null;
+              this.formName.providerCode = null;
+              this.formName.batchCode = null;
+              this.formName.status = null;
+
               this.$store.commit('flushTable',true)
               // let e1 = document.createEvent('MouseEvent');
               // e1.initEvent('click', false, false);
               // this.$refs.flushT.$el.dispatchEvent(e1);
+            }else {
+              this.$message.error('录入失败')
             }
           })
 
@@ -196,7 +208,13 @@ export default {
     let mf = new Date().getMinutes()<10 ? '0'+new Date().getMinutes() : new Date().getMinutes();
     let ss = new Date().getSeconds()<10 ? '0'+new Date().getSeconds() : new Date().getSeconds();
     this.formName.arrivalDate = yy+'-'+mm+'-'+dd+' '+hh+':'+mf+':'+ss;
-    console.log(this.formName.arrivalDate)
+
+  },
+  created() {
+    this.username = sessionStorage.getItem('username');
+    this.employeeId1 = this.employeeId;
+    this.formName.operator = sessionStorage.getItem('username')
+
   }
 
 }

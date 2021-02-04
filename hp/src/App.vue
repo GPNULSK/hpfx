@@ -2,9 +2,9 @@
   <div id="app">
     <template>
 
-      <el-container>
+      <el-container >
         <!--      header显示导航栏-->
-        <el-header>
+        <el-header v-show="!(path === '/login')">
           <img src="./assets/images/love.png" style="float: left;">
           <div class="nav_menu" style="height: 100%;z-index: 10;padding-left: 250px">
             <el-menu
@@ -13,9 +13,9 @@
               background-color="#545c64"
               text-color="#fff"
               active-text-color="#ffd04b" >
-              <img src="./assets/images/logout.png" title="退出" style="float: right;width: 30px;margin-top: 14px;margin-right: 50px;cursor: pointer">
+              <img @click="logout" src="./assets/images/logout.png" title="退出" style="float: right;width: 30px;margin-top: 14px;margin-right: 50px;cursor: pointer">
 
-              <p class="uname">用户名</p>
+              <p class="uname">{{username1}}</p>
               <img class="user_icon" src="./assets/images/userIcon.png">
             </el-menu>
 
@@ -25,7 +25,7 @@
 
         <el-container>
           <!--        aside显示侧边栏-->
-          <el-aside width="14vw">
+          <el-aside width="14vw" v-show="!(path === '/login')">
             <div class="nav_upright">
               <div style="height: 100%">
                 <el-menu
@@ -102,12 +102,17 @@
 </template>
 
 <script>
+import {mapActions, mapGetters} from "vuex";
+
 export default {
   name: 'App',
 
   data(){
     return{
       f1:true,
+      loginFlag1:true,
+      path:'',
+      username1:''
     }
   },
 
@@ -136,11 +141,45 @@ export default {
     },
     toTest(){
       this.$router.replace('/test')
-    }
+    },
+
+    logout(){
+      sessionStorage.clear();
+      this.$router.replace('/')
+    },
+
+    ...mapActions(
+      ['setUser','openForm','flushTable','noFlush']
+    )
 
   },
+
+  computed:{
+    isFlush:function (){
+      this.flushFlag = this.$store.getters.isFlush
+      console.log(this.$store.getters.isFlush)
+      return this.$store.getters.isFlush
+    }
+  },
+
+  mounted() { //mounted 和 watch实现隐藏APP页面的通用导航栏
+    this.path = this.$route.path;
+  },
+  watch:{
+    $route(to,from){
+      this.path = to.path
+      this.username1 = sessionStorage.getItem('username')
+    },
+  },
+
+  created() {
+    this.username1 = sessionStorage.getItem('username')
+  }
+
+
 }
 </script>
+
 
 <style>
 
